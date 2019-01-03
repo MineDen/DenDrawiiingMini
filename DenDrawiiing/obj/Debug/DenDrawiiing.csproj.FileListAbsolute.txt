@@ -1,0 +1,12 @@
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\bin\Debug\DenDrawiiing.exe.config
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\bin\Debug\DenDrawiiing.exe
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\bin\Debug\DenDrawiiing.pdb
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.Properties.Resources.resources
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.csproj.GenerateResource.cache
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.csproj.CoreCompileInputs.cache
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.exe
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.pdb
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.csprojAssemblyReference.cache
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\bin\Debug\colorapi.dll
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\bin\Debug\colorapi.pdb
+C:\Users\dengr\source\repos\DenDrawiiingMini\DenDrawiiing\obj\Debug\DenDrawiiing.csproj.CopyComplete
