@@ -13,10 +13,13 @@ namespace DenDrawiiing.Tools
         public static readonly Eraser Eraser = new Eraser();
         public static readonly Line Line = new Line();
         public static readonly FloodFill FloodFill = new FloodFill();
+        public static readonly RainbowBrush RainbowBrush = new RainbowBrush();
         public static readonly Rectangle Rectangle = new Rectangle();
         public static readonly Ellipse Ellipse = new Ellipse();
         public static readonly Triangle Triangle = new Triangle();
         public static readonly FreeShape FreeShape = new FreeShape();
+        public static readonly Stamp Stamp = new Stamp();
+        public static readonly FreeSelection FreeSelection = new FreeSelection();
 
         public static Tool Current = Brush;
 

@@ -6,23 +6,13 @@ namespace DenDrawiiing.UI
 {
     public class PanelHeader : UserControl
     {
-        public PanelHeader()
-        {
-
-        }
-
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
             Graphics g = e.Graphics;
-            LinearGradientBrush b = new LinearGradientBrush(
-                new Point(0, 0),
-                new Point(Width, 0),
-                Color.SeaGreen,
-                BackColor
-                );
-            g.FillRectangle(b, 0, 0, Width, Height);
-            g.DrawString(Text, new Font(SystemFonts.CaptionFont, FontStyle.Bold), Brushes.White, 0, 0);
+            g.FillRectangle(new SolidBrush(BackColor), 0, 0, Width, Height);
+            g.DrawLine(new Pen((Color)GlobalSettings.GetColor(2)), Width - 1, 0, Width - 1, Height - 1);
+            g.DrawString(Text, SystemFonts.CaptionFont, new SolidBrush(ForeColor), 0, 0);
         }
     }
 }

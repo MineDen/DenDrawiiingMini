@@ -128,9 +128,12 @@ namespace DenDrawiiing
                 g.FillRectangle(new SolidBrush(Color.FromArgb(R, val, B)), 2 + x, 6 + sliderHeight, 1, sliderHeight - 2);
                 g.FillRectangle(new SolidBrush(Color.FromArgb(R, G, val)), 2 + x, 8 + sliderHeight * 2, 1, sliderHeight - 2);
             }
-            g.DrawRectangle(Pens.Black, 1 + Math.Min((float)(R / 255d * (Width - 4)), Width - 5), 2, 2, sliderHeight - 1);
-            g.DrawRectangle(Pens.Black, 1 + Math.Min((float)(G / 255d * (Width - 4)), Width - 5), 5 + sliderHeight, 2, sliderHeight - 1);
-            g.DrawRectangle(Pens.Black, 1 + Math.Min((float)(B / 255d * (Width - 4)), Width - 5), 7 + sliderHeight * 2, 2, sliderHeight - 1);
+            g.DrawRectangle(new Pen((Color)GlobalSettings.GetColor(4)),
+                1 + Math.Min((float)(R / 255d * (Width - 4)), Width - 5), 2, 2, sliderHeight - 1);
+            g.DrawRectangle(new Pen((Color)GlobalSettings.GetColor(4)),
+                1 + Math.Min((float)(G / 255d * (Width - 4)), Width - 5), 5 + sliderHeight, 2, sliderHeight - 1);
+            g.DrawRectangle(new Pen((Color)GlobalSettings.GetColor(4)),
+                1 + Math.Min((float)(B / 255d * (Width - 4)), Width - 5), 7 + sliderHeight * 2, 2, sliderHeight - 1);
         }
     }
 }

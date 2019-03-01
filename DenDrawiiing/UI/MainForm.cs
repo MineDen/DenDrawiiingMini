@@ -1,4 +1,5 @@
 ﻿using DenDrawiiing.Tools;
+using DenDrawiiing.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,6 +25,10 @@ namespace DenDrawiiing.UI
         private Graphics bmpGraphics;
         private Bitmap buffer = new Bitmap(640, 480);
         private Graphics bufferGraphics;
+        private Bitmap mask = new Bitmap(640, 480);
+        private Graphics maskGraphics;
+        private Bitmap rawBuffer = new Bitmap(640, 480);
+        private Graphics rawBufferGraphics;
 
         private bool mPressed = false;
         private Color color = Color.Black;
@@ -38,14 +43,15 @@ namespace DenDrawiiing.UI
                 colorDisplay.Color = color;
             }
         }
-        public Color Color2 {
+        public Color Color2
+        {
             get => color2;
             set
             {
                 color2 = value;
                 colorDisplay.Color2 = color2;
             }
-           }
+        }
         public MainForm()
         {
             GlobalSettings.Load();
@@ -54,8 +60,6 @@ namespace DenDrawiiing.UI
             InitializePanel();
             SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
 
-            bmp.MakeTransparent();
-            buffer.MakeTransparent();
             for (int x = 0; x < bmp.Width; x++)
             {
                 for (int y = 0; y < bmp.Height; y++)
@@ -67,6 +71,12 @@ namespace DenDrawiiing.UI
             bmpGraphics.SmoothingMode = SmoothingMode.AntiAlias;
             bufferGraphics = Graphics.FromImage(buffer);
             bufferGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+            maskGraphics = Graphics.FromImage(mask);
+            maskGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+            rawBufferGraphics = Graphics.FromImage(rawBuffer);
+            rawBufferGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            maskGraphics.Clear(Color.White);
 
             canvas.MouseDown += PMouseDown;
             canvas.MouseMove += PMouseMove;
@@ -83,6 +93,8 @@ namespace DenDrawiiing.UI
             e.Graphics.FillRectangle(new HatchBrush(HatchStyle.LargeCheckerBoard, Color.White, Color.LightGray),
                 0, 0, canvas.Width, canvas.Height);
             e.Graphics.DrawImage(buffer, 0, 0);
+            if (showSelection.Checked && SelectionTool.Selected)
+                e.Graphics.DrawImage(ImageMask.GetMaskVisual(mask, Color.FromArgb(140, Color.LightBlue)), 0, 0);
         }
 
         private void BufferDrawStart()
@@ -101,10 +113,32 @@ namespace DenDrawiiing.UI
             if (mPressed == true)
             {
                 mPressed = false;
-                Tool.Current.DrawEnd(e.Location, bufferGraphics, Color, buffer);
-                History.Action((Bitmap)bmp.Clone());
-                Tool.Current.Serialize(bmpGraphics, Color, bmp);
-                BufferDrawStart();
+                if (previewSelection.Checked && !(Tool.Current is SelectionTool))
+                {
+                    rawBufferGraphics.Clear(Color.Transparent);
+                    rawBufferGraphics.DrawImage(bmp, 0, 0);
+                    Tool.Current.DrawEnd(e.Location, rawBufferGraphics, Color, rawBuffer);
+                    ImageMask.Mask(rawBuffer, mask, buffer);
+                }
+                else
+                {
+                    Tool.Current.DrawEnd(e.Location, bufferGraphics, Color, buffer);
+                }
+                if (!(Tool.Current is SelectionTool))
+                {
+                    History.Action((Bitmap)bmp.Clone());
+                    rawBufferGraphics.Clear(Color.Transparent);
+                    rawBufferGraphics.DrawImage(bmp, 0, 0);
+                    Tool.Current.Serialize(rawBufferGraphics, Color, rawBuffer);
+                    ImageMask.Mask(rawBuffer, mask, bmp);
+                    BufferDrawStart();
+                }
+                else
+                {
+                    Tool.Current.Serialize(maskGraphics, Color.White, mask);
+                    if (!SelectionTool.Selected)
+                        maskGraphics.Clear(Color.White);
+                }
                 BufferDrawEnd();
             }
         }
@@ -112,7 +146,17 @@ namespace DenDrawiiing.UI
         private void PMouseMove(object sender, MouseEventArgs e)
         {
             BufferDrawStart();
-            Tool.Current.MouseMove(e.Location, bufferGraphics, Color, buffer, mPressed);
+            if (previewSelection.Checked && !(Tool.Current is SelectionTool))
+            {
+                rawBufferGraphics.Clear(Color.Transparent);
+                rawBufferGraphics.DrawImage(bmp, 0, 0);
+                Tool.Current.MouseMove(e.Location, rawBufferGraphics, Color, rawBuffer, mPressed);
+                ImageMask.Mask(rawBuffer, mask, buffer);
+            }
+            else
+            {
+                Tool.Current.MouseMove(e.Location, bufferGraphics, Color, buffer, mPressed);
+            }
             BufferDrawEnd();
         }
 
@@ -122,67 +166,158 @@ namespace DenDrawiiing.UI
             {
                 mPressed = true;
                 BufferDrawStart();
-                Tool.Current.DrawStart(e.Location, bufferGraphics, Color, buffer);
+                if (previewSelection.Checked && !(Tool.Current is SelectionTool))
+                {
+                    rawBufferGraphics.Clear(Color.Transparent);
+                    rawBufferGraphics.DrawImage(bmp, 0, 0);
+                    Tool.Current.DrawStart(e.Location, rawBufferGraphics, Color, rawBuffer);
+                    ImageMask.Mask(rawBuffer, mask, buffer);
+                }
+                else
+                {
+                    Tool.Current.DrawStart(e.Location, bufferGraphics, Color, buffer);
+                }
+                if (Tool.Current is SelectionTool)
+                    maskGraphics.Clear(Color.Black);
                 BufferDrawEnd();
             }
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Control && e.Shift && e.KeyCode == Keys.Z)
+            if (e.Control && e.Shift && !e.Alt)
             {
-                if (History.redoHistory.Count >= 1)
-                    History.Redo(bmpGraphics, (Bitmap)bmp.Clone());
-                BufferDrawStart();
-                BufferDrawEnd();
-            }
-            else if (e.Control && e.KeyCode == Keys.Z)
-            {
-                if (History.undoHistory.Count >= 1)
-                    History.Undo(bmpGraphics, (Bitmap)bmp.Clone());
-                BufferDrawStart();
-                BufferDrawEnd();
-            }
-            else if (e.Control && e.KeyCode == Keys.P)
-            {
-                ShowColorPicker();
-            }
-            else if (e.Control && e.KeyCode == Keys.S)
-            {
-                SaveFileDialog sfd = new SaveFileDialog
+                if (e.KeyCode == Keys.Z)
                 {
-                    AddExtension = true,
-                    AutoUpgradeEnabled = true,
-                    DefaultExt = "png",
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                    Title = "Зберегти як...",
-                    FileName = "Без імені.png",
-                    Filter =
-                    "Portable Network Graphics (*.png)|*.png|Зображення JPEG (*.jpg, *.jpeg)|*.jpg;*.jpeg|Точковий рисунок (*.bmp)|*.bmp|Зображення TIFF (*.tiff, *.tif)|*.tiff;*.tif"
-                };
-
-                if (sfd.ShowDialog() == DialogResult.OK)
+                    if (History.redoHistory.Count >= 1)
+                        History.Redo(bmpGraphics, (Bitmap)bmp.Clone());
+                    BufferDrawStart();
+                    BufferDrawEnd();
+                }
+            }
+            else if (e.Control && !e.Shift && !e.Alt)
+            {
+                if (e.KeyCode == Keys.Z)
                 {
-                    string ext = Path.GetExtension(sfd.FileName);
-                    ImageFormat format = ImageFormat.Png;
-                    switch (ext)
+                    if (History.undoHistory.Count >= 1)
+                        History.Undo(bmpGraphics, (Bitmap)bmp.Clone());
+                    BufferDrawStart();
+                    BufferDrawEnd();
+                }
+                else if (e.KeyCode == Keys.P)
+                {
+                    ShowColorPicker();
+                }
+                else if (e.KeyCode == Keys.I)
+                {
+                    if (SelectionTool.Selected)
                     {
-                        case ".png":
-                            format = ImageFormat.Png;
-                            break;
-                        case ".jpg":
-                        case ".jpeg":
-                            format = ImageFormat.Jpeg;
-                            break;
-                        case ".bmp":
-                            format = ImageFormat.Bmp;
-                            break;
-                        case ".tiff":
-                        case ".tif":
-                            format = ImageFormat.Tiff;
-                            break;
+                        Filters.Invert(mask, Color);
+                        BufferDrawStart();
+                        BufferDrawEnd();
                     }
-                    bmp.Save(sfd.FileName, format);
+                }
+                else if (e.KeyCode == Keys.O)
+                {
+                    OpenFileDialog ofd = new OpenFileDialog
+                    {
+                        AddExtension = true,
+                        AutoUpgradeEnabled = true,
+                        CheckFileExists = true,
+                        CheckPathExists = true,
+                        DereferenceLinks = true,
+                        Filter = "Усі підтримувані формати (*.png, *.jpg, *.jpeg, *.bmp, *.tiff, *.tif)|*.png;*.jpg;*.jpeg;*.bmp;*.tiff;*.tif" +
+                        "|Portable Network Graphics (*.png)|*.png|Зображення JPEG (*.jpg, *.jpeg)|*.jpg;*.jpeg|Точковий рисунок (*.bmp)|*.bmp|Зображення TIFF (*.tiff, *.tif)|*.tiff;*.tif",
+                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                        Multiselect = false,
+                        Title = "Відкрити...",
+                        ValidateNames = true
+                    };
+
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        try
+                        {
+                            Bitmap b = new Bitmap(ofd.FileName);
+                            bmp.Dispose();
+                            bmp = b.Clone(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+                                PixelFormat.Format32bppArgb);
+                            b.Dispose();
+
+                            buffer.Dispose();
+                            mask.Dispose();
+                            rawBuffer.Dispose();
+
+                            buffer = new Bitmap(bmp.Width, bmp.Height);
+                            mask = new Bitmap(bmp.Width, bmp.Height);
+                            rawBuffer = new Bitmap(bmp.Width, bmp.Height);
+
+                            bmpGraphics.Dispose();
+                            bufferGraphics.Dispose();
+                            maskGraphics.Dispose();
+                            rawBufferGraphics.Dispose();
+
+                            bmpGraphics = Graphics.FromImage(bmp);
+                            bmpGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+                            bufferGraphics = Graphics.FromImage(buffer);
+                            bufferGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+                            maskGraphics = Graphics.FromImage(mask);
+                            maskGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+                            rawBufferGraphics = Graphics.FromImage(rawBuffer);
+                            rawBufferGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+                            maskGraphics.Clear(Color.White);
+                            SelectionTool.Selected = false;
+
+                            canvas.Size = bmp.Size;
+
+                            BufferDrawStart();
+                            BufferDrawEnd();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Помилка відкриття файлу: " + ex.Message, "Помилка",
+                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+                else if (e.KeyCode == Keys.S)
+                {
+                    SaveFileDialog sfd = new SaveFileDialog
+                    {
+                        AddExtension = true,
+                        AutoUpgradeEnabled = true,
+                        DefaultExt = "png",
+                        InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                        Title = "Зберегти як...",
+                        FileName = "Без імені.png",
+                        Filter =
+                        "Portable Network Graphics (*.png)|*.png|Зображення JPEG (*.jpg, *.jpeg)|*.jpg;*.jpeg|Точковий рисунок (*.bmp)|*.bmp|Зображення TIFF (*.tiff, *.tif)|*.tiff;*.tif"
+                    };
+
+                    if (sfd.ShowDialog() == DialogResult.OK)
+                    {
+                        string ext = Path.GetExtension(sfd.FileName);
+                        ImageFormat format = ImageFormat.Png;
+                        switch (ext)
+                        {
+                            case ".png":
+                                format = ImageFormat.Png;
+                                break;
+                            case ".jpg":
+                            case ".jpeg":
+                                format = ImageFormat.Jpeg;
+                                break;
+                            case ".bmp":
+                                format = ImageFormat.Bmp;
+                                break;
+                            case ".tiff":
+                            case ".tif":
+                                format = ImageFormat.Tiff;
+                                break;
+                        }
+                        bmp.Save(sfd.FileName, format);
+                    }
                 }
             }
         }
@@ -241,6 +376,7 @@ namespace DenDrawiiing.UI
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Den Drawiiing Mini [DEBUG]";
+            this.ForeColor = (Color)GlobalSettings.GetColor(4);
             this.canvasPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.canvas)).EndInit();
             this.ResumeLayout(false);

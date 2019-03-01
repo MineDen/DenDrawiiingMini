@@ -17,6 +17,7 @@ namespace DenDrawiiing
         private Color color2 = Color.White;
         private bool isDark = true;
         private bool isDark2 = false;
+        private float size = 2.0f;
         public Color Color
         {
             get => color;
@@ -38,6 +39,15 @@ namespace DenDrawiiing
                 if ((color2.R + color2.G + color2.B) / 3d < 127)
                     isDark2 = true;
                 else isDark2 = false;
+                Invalidate();
+            }
+        }
+
+        public float ToolSize {
+            get => size;
+            set
+            {
+                size = value;
                 Invalidate();
             }
         }
@@ -65,6 +75,15 @@ namespace DenDrawiiing
                 ), 50, 2, 21, 43);
             g.FillRectangle(new SolidBrush(Color2), 76, 2, 44, 44);
             g.DrawRectangle(new Pen(Color.FromArgb(60, isDark2 ? Color.White : Color.Black)), 76, 2, 43, 43);
+            GraphicsState gState = g.Save();
+            g.SetClip(new Rectangle(124, 2, 44, 44));
+            g.TranslateTransform(124, 2);
+            g.Clear(isDark ? Color.White : Color.Black);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.FillEllipse((Brush)(ColorAPI.Color)Color, 22 - ToolSize / 2, 22 - ToolSize / 2, ToolSize, ToolSize);
+            g.SmoothingMode = SmoothingMode.Default;
+            g.DrawRectangle(new Pen(Color.FromArgb(60, isDark ? Color.Black : Color.White)), 0, 0, 43, 43);
+            g.Restore(gState);
         }
     }
 }

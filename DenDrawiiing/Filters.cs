@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DenDrawiiing.Utils;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -12,9 +13,9 @@ namespace DenDrawiiing
 {
     public static class Filters
     {
-        public delegate void Filter(Bitmap bmp);
+        public delegate void Filter(Bitmap bmp, Color c);
 
-        public static void Invert(Bitmap bmp)
+        public static void Invert(Bitmap bmp, Color c)
         {
             BitmapData data = bmp.LockBits(new System.Drawing.Rectangle(new Point(0, 0), bmp.Size), ImageLockMode.ReadWrite, bmp.PixelFormat);
             IntPtr fl = data.Scan0;
@@ -32,7 +33,7 @@ namespace DenDrawiiing
             bmp.UnlockBits(data);
         }
 
-        public static void Greyscale(Bitmap bmp)
+        public static void Greyscale(Bitmap bmp, Color c)
         {
             BitmapData data = bmp.LockBits(new System.Drawing.Rectangle(new Point(0, 0), bmp.Size), ImageLockMode.ReadWrite, bmp.PixelFormat);
             IntPtr fl = data.Scan0;
@@ -51,7 +52,7 @@ namespace DenDrawiiing
             bmp.UnlockBits(data);
         }
 
-        public static void Drugs(Bitmap bmp)
+        public static void Drugs(Bitmap bmp, Color c)
         {
             Random rnd = new Random();
             BitmapData data = bmp.LockBits(new System.Drawing.Rectangle(new Point(0, 0), bmp.Size), ImageLockMode.ReadWrite, bmp.PixelFormat);
@@ -70,7 +71,7 @@ namespace DenDrawiiing
             bmp.UnlockBits(data);
         }
 
-        public static void Recolor(Bitmap bmp)
+        public static void Recolor(Bitmap bmp, Color c)
         {
             BitmapData data = bmp.LockBits(new System.Drawing.Rectangle(new Point(0, 0), bmp.Size), ImageLockMode.ReadWrite, bmp.PixelFormat);
             IntPtr fl = data.Scan0;
@@ -89,7 +90,7 @@ namespace DenDrawiiing
             bmp.UnlockBits(data);
         }
 
-        public static void ColorPress(Bitmap bmp)
+        public static void ColorPress(Bitmap bmp, Color c)
         {
             BitmapData data = bmp.LockBits(new System.Drawing.Rectangle(new Point(0, 0), bmp.Size), ImageLockMode.ReadWrite, bmp.PixelFormat);
             IntPtr fl = data.Scan0;
@@ -105,6 +106,11 @@ namespace DenDrawiiing
             }
             Marshal.Copy(rgb, 0, fl, bytes);
             bmp.UnlockBits(data);
+        }
+
+        public static void Tint(Bitmap bmp, Color c)
+        {
+            ImageTint.Tint(bmp, c);
         }
 
         private static bool IsDark(byte channel)

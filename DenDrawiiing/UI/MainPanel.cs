@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +20,14 @@ namespace DenDrawiiing.UI
         private ContextMenuStrip filtersStrip;
         private Button tools;
         private ContextMenuStrip toolsStrip;
+        private Button fillAll;
+        private Button clearAll;
+        private PanelHeader stampHeader;
+        private ComboBox stamp;
+        private CheckBox tintStamp;
+        private PanelHeader selectionHeader;
+        private CheckBox showSelection;
+        private CheckBox previewSelection;
 
         public void InitializePanel()
         {
@@ -26,7 +35,9 @@ namespace DenDrawiiing.UI
             {
                 Location = new Point(0, 0),
                 Size = new Size(240, 16),
-                Text = "Загальні"
+                Text = "Загальні",
+                BackColor = (Color)GlobalSettings.GetColor(3),
+                ForeColor = (Color)GlobalSettings.GetColor(5)
             };
 
             colorPicker = new ColorPicker
@@ -55,9 +66,37 @@ namespace DenDrawiiing.UI
             };
             brushSize.ValueChanged += OnBrushSizeChanged;
 
-            filters = new Button
+            fillAll = new Button()
             {
                 Location = new Point(6, 192),
+                Size = new Size(110, 28),
+                Text = "Заповнити все"
+            };
+            fillAll.Click += (object sender, EventArgs e) =>
+            {
+                History.Action((Bitmap)bmp.Clone());
+                bmpGraphics.Clear(Color);
+                BufferDrawStart();
+                BufferDrawEnd();
+            };
+
+            clearAll = new Button()
+            {
+                Location = new Point(124, 192),
+                Size = new Size(110, 28),
+                Text = "Очистити все"
+            };
+            clearAll.Click += (object sender, EventArgs e) =>
+            {
+                History.Action((Bitmap)bmp.Clone());
+                bmpGraphics.Clear(Color.Transparent);
+                BufferDrawStart();
+                BufferDrawEnd();
+            };
+
+            filters = new Button
+            {
+                Location = new Point(6, 226),
                 Size = new Size(110, 28),
                 Text = "Фільтри"
             };
@@ -69,10 +108,11 @@ namespace DenDrawiiing.UI
             filtersStrip.Items.Add("Шум", null, (object sender, EventArgs e) => Execute(Filters.Drugs));
             filtersStrip.Items.Add("Перефарбувати", null, (object sender, EventArgs e) => Execute(Filters.Recolor));
             filtersStrip.Items.Add("Стиснення кольорів", null, (object sender, EventArgs e) => Execute(Filters.ColorPress));
+            filtersStrip.Items.Add("Заміна кольору", null, (object sender, EventArgs e) => Execute(Filters.Tint));
 
             tools = new Button
             {
-                Location = new Point(124, 192),
+                Location = new Point(124, 226),
                 Size = new Size(110, 28),
                 Text = "Інструменти"
             };
@@ -82,18 +122,111 @@ namespace DenDrawiiing.UI
             toolsStrip.Items.Add("Пензель", null, (object sender, EventArgs e) => SetTool(Tool.Brush));
             toolsStrip.Items.Add("Ґумка", null, (object sender, EventArgs e) => SetTool(Tool.Eraser));
             toolsStrip.Items.Add("Лінія", null, (object sender, EventArgs e) => SetTool(Tool.Line));
-            // toolsStrip.Items.Add("Заповнення", null, (object sender, EventArgs e) => SetTool(Tool.FloodFill)); // floodfill is incomplete
+            toolsStrip.Items.Add("Заповнення", null, (object sender, EventArgs e) => SetTool(Tool.FloodFill)); // floodfill is incomplete
+            toolsStrip.Items.Add("Веселковий пензель", null, (object sender, EventArgs e) => SetTool(Tool.RainbowBrush));
             toolsStrip.Items.Add("Прямокутник", null, (object sender, EventArgs e) => SetTool(Tool.Rectangle));
             toolsStrip.Items.Add("Еліпс", null, (object sender, EventArgs e) => SetTool(Tool.Ellipse));
             toolsStrip.Items.Add("Трикутник", null, (object sender, EventArgs e) => SetTool(Tool.Triangle));
             toolsStrip.Items.Add("Довільна фігура", null, (object sender, EventArgs e) => SetTool(Tool.FreeShape));
+            toolsStrip.Items.Add("Штамп", null, (object sender, EventArgs e) => SetTool(Tool.Stamp));
+            toolsStrip.Items.Add(new ToolStripSeparator());
+            toolsStrip.Items.Add("Довільне виділення", null, (object sender, EventArgs e) => SetTool(Tool.FreeSelection));
+
+            stampHeader = new PanelHeader
+            {
+                Location = new Point(0, 260),
+                Size = new Size(240, 16),
+                Text = "Штамп",
+                BackColor = (Color)GlobalSettings.GetColor(3),
+                ForeColor = (Color)GlobalSettings.GetColor(5)
+            };
+
+            stamp = new ComboBox
+            {
+                Location = new Point(6, 282),
+                Size = new Size(228, 24),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Enabled = false
+            };
+            Tool.Stamp.stamps = Directory.GetFiles("stamps", "*.png", SearchOption.AllDirectories);
+            for (int i = 0; i < Tool.Stamp.stamps.Length; i++)
+            {
+                stamp.Items.Add(Path.GetFileNameWithoutExtension(Tool.Stamp.stamps[i]));
+            }
+            if (Tool.Stamp.stamps.Length > 0)
+            {
+                stamp.Enabled = true;
+                stamp.SelectedIndex = 0;
+                Tool.Stamp.selectedStamp = Path.GetFileNameWithoutExtension(Tool.Stamp.stamps[0]);
+            }
+            stamp.SelectedIndexChanged += (object sender, EventArgs e) =>
+            {
+                Tool.Stamp.selectedStamp = Path.GetFileNameWithoutExtension(Tool.Stamp.stamps[stamp.SelectedIndex]);
+            };
+
+            tintStamp = new CheckBox
+            {
+                AutoSize = false,
+                Location = new Point(6, 312),
+                Size = new Size(228, 24),
+                Text = "Зафарбовувати штамп",
+                Checked = true
+            };
+            tintStamp.CheckedChanged += (object sender, EventArgs e) =>
+            {
+                Tool.Stamp.tintStamp = tintStamp.Checked;
+            };
+
+            selectionHeader = new PanelHeader
+            {
+                Location = new Point(0, 342),
+                Size = new Size(240, 16),
+                Text = "Виділення",
+                BackColor = (Color)GlobalSettings.GetColor(3),
+                ForeColor = (Color)GlobalSettings.GetColor(5)
+            };
+
+            showSelection = new CheckBox
+            {
+                AutoSize = false,
+                Location = new Point(6, 364),
+                Size = new Size(228, 24),
+                Text = "Відображати виділення",
+                Checked = true
+            };
+            showSelection.CheckedChanged += (object sender, EventArgs e) =>
+            {
+                canvas.Invalidate();
+            };
+
+            previewSelection = new CheckBox
+            {
+                AutoSize = false,
+                Location = new Point(6, 394),
+                Size = new Size(228, 24),
+                Text = "Перегляд результату (повільно)",
+                Checked = false
+            };
 
             mainPanel.Controls.Add(generalHeader);
             mainPanel.Controls.Add(colorPicker);
             mainPanel.Controls.Add(colorDisplay);
             mainPanel.Controls.Add(brushSize);
+            mainPanel.Controls.Add(fillAll);
+            mainPanel.Controls.Add(clearAll);
             mainPanel.Controls.Add(filters);
             mainPanel.Controls.Add(tools);
+            mainPanel.Controls.Add(stampHeader);
+            mainPanel.Controls.Add(stamp);
+            mainPanel.Controls.Add(tintStamp);
+            mainPanel.Controls.Add(selectionHeader);
+            mainPanel.Controls.Add(showSelection);
+            mainPanel.Controls.Add(previewSelection);
+
+            mainPanel.Paint += (object sender, PaintEventArgs e) =>
+            {
+                e.Graphics.DrawLine(new Pen((Color)GlobalSettings.GetColor(2)), 239, 0, 239, Height);
+            };
         }
 
         private void OnColorSwap(object sender, MouseEventArgs e)
@@ -120,7 +253,7 @@ namespace DenDrawiiing.UI
         private void Execute(Filters.Filter filter)
         {
             History.Action((Bitmap)bmp.Clone());
-            filter(bmp);
+            filter(bmp, Color);
             BufferDrawStart();
             BufferDrawEnd();
         }
@@ -132,9 +265,11 @@ namespace DenDrawiiing.UI
 
         private void OnBrushSizeChanged(object sender, EventArgs e)
         {
+            colorDisplay.ToolSize = brushSize.Value / 2f;
             Tool.Brush.size = brushSize.Value / 2f;
             Tool.Eraser.size = brushSize.Value / 2f;
             Tool.Line.size = brushSize.Value / 2f;
+            Tool.RainbowBrush.size = brushSize.Value / 2f;
             Tool.Rectangle.size = brushSize.Value / 2f;
             Tool.Ellipse.size = brushSize.Value / 2f;
             Tool.Triangle.size = brushSize.Value / 2f;

@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Tools\RainbowBrush.cs" />
     <Compile Include="Tools\Eraser.cs" />
     <Compile Include="Tools\Brush.cs" />
     <Compile Include="ColorDisplay.cs">
@@ -56,7 +57,10 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Tools\FloodFill.cs" />
+    <Compile Include="Tools\FreeSelection.cs" />
     <Compile Include="Tools\Line.cs" />
+    <Compile Include="Tools\SelectionTool.cs" />
+    <Compile Include="Tools\Stamp.cs" />
     <Compile Include="Tools\Triangle.cs" />
     <Compile Include="Filters.cs" />
     <Compile Include="Tools\FreeShape.cs" />
@@ -75,6 +79,8 @@
     <Compile Include="Tools\Ellipse.cs" />
     <Compile Include="Tools\Rectangle.cs" />
     <Compile Include="Tools\Tool.cs" />
+    <Compile Include="Utils\ImageMask.cs" />
+    <Compile Include="Utils\ImageTint.cs" />
     <Compile Include="Utils\RoundedRectangle.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
