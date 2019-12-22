@@ -31,7 +31,7 @@ namespace DenDrawiiing
             if (!File.Exists("themes\\default.ddp"))
             {
                 ColorPalette cp = new ColorPalette();
-                cp.Add(new Color(0xf8, 0xf8, 0xf8)); // workspace; background
+                cp.Add(new Color(0xf0, 0xf0, 0xf0)); // workspace; background
                 cp.Add(new Color(0xff, 0xff, 0xff)); // toolbar
                 cp.Add(new Color(0x20, 0x20, 0x20, 0x36)); // splitter
                 cp.Add(new Color(0xdb, 0x3f, 0x3f)); // icons

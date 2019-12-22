@@ -12,7 +12,6 @@ namespace DenDrawiiing.Tools
         public static readonly Brush Brush = new Brush();
         public static readonly Eraser Eraser = new Eraser();
         public static readonly Line Line = new Line();
-        public static readonly FloodFill FloodFill = new FloodFill();
         public static readonly RainbowBrush RainbowBrush = new RainbowBrush();
         public static readonly Rectangle Rectangle = new Rectangle();
         public static readonly Ellipse Ellipse = new Ellipse();

@@ -53,7 +53,7 @@ namespace DenDrawiiing.Tools
             pen.SetLineCap(LineCap.Round, LineCap.Round, DashCap.Round);
             for (int i = 0; i < path.Count - 1; i++)
             {
-                pen.Color = (Color)ColorAPI.Color.FromHSL((double)i / path.Count * 360, 100, 50);
+                pen.Color = (Color)ColorAPI.Color.FromHSL((double)i / path.Count, 1, 0.5d);
                 g.DrawLine(pen, path[i], path[i + 1]);
             }
             pen.Dispose();

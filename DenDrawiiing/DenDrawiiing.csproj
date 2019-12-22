@@ -56,7 +56,6 @@
     <Compile Include="ColorPicker.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Tools\FloodFill.cs" />
     <Compile Include="Tools\FreeSelection.cs" />
     <Compile Include="Tools\Line.cs" />
     <Compile Include="Tools\SelectionTool.cs" />
@@ -105,8 +104,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\DenDrawiiing2\ColorAPI\ColorAPI.csproj">
-      <Project>{E1863921-D278-4F3E-AD89-B2BFD050A53E}</Project>
+    <ProjectReference Include="..\ColorAPI\ColorAPI.csproj">
+      <Project>{b3d35e8d-318c-4deb-be75-1d41bd322a83}</Project>
       <Name>ColorAPI</Name>
     </ProjectReference>
   </ItemGroup>

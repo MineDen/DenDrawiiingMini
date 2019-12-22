@@ -66,7 +66,7 @@ namespace DenDrawiiing
         {
             if (mPressed)
             {
-                int sliderHeight = (int)Math.Round((Height - 8) / 3d);
+                // int sliderHeight = (int)Math.Round((Height - 8) / 3d);
 
                 if (cChange == 0)
                 {

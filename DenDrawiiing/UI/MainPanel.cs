@@ -122,7 +122,6 @@ namespace DenDrawiiing.UI
             toolsStrip.Items.Add("Пензель", null, (object sender, EventArgs e) => SetTool(Tool.Brush));
             toolsStrip.Items.Add("Ґумка", null, (object sender, EventArgs e) => SetTool(Tool.Eraser));
             toolsStrip.Items.Add("Лінія", null, (object sender, EventArgs e) => SetTool(Tool.Line));
-            toolsStrip.Items.Add("Заповнення", null, (object sender, EventArgs e) => SetTool(Tool.FloodFill)); // floodfill is incomplete
             toolsStrip.Items.Add("Веселковий пензель", null, (object sender, EventArgs e) => SetTool(Tool.RainbowBrush));
             toolsStrip.Items.Add("Прямокутник", null, (object sender, EventArgs e) => SetTool(Tool.Rectangle));
             toolsStrip.Items.Add("Еліпс", null, (object sender, EventArgs e) => SetTool(Tool.Ellipse));
@@ -332,6 +331,10 @@ namespace DenDrawiiing.UI
                 colorPicker.G = c.G;
                 colorPicker.B = c.B;
                 cp.Close();
+            };
+            cp.FormClosed += (object sender, FormClosedEventArgs e) =>
+            {
+                cp.Dispose();
             };
             cp.Show();
         }
